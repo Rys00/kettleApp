@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">kettleApp</string>
+    <string name="verify_question">Which team is the best</string>
+    <string name="verify_answer">Sprytne Dzbany</string>
 </resources>
