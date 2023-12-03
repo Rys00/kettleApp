@@ -1,5 +1,19 @@
 <resources>
     <string name="app_name">kettleApp</string>
+    <string name="app_title">Kettle App</string>
+    <string name="kettle_name">Kettle Manager</string>
+    <string name="find_kettles_text">Find my kettle!</string>
+    <string name="blink_led_text">Blink LED</string>
     <string name="verify_question">Which team is the best</string>
     <string name="verify_answer">Sprytne Dzbany</string>
+    <string name="progress_fetching_network_config">1/3\nFetching network configuration…</string>
+    <string name="progress_scanning_network">2/3\nScanning network for kettles…</string>
+    <string name="progress_verifying_devices">3/3\nVerifying connections…</string>
+    <string name="progress_no_devices_found">No device was found!</string>
+    <string name="help_no_devices_found">Make sure you are connected to the same network as your kettle and try again</string>
+    <string name="progress_error">An error occurred</string>
+    <string name="progress_done">Done!</string>
+    <string name="progress_led_on">Led has been turned on</string>
+    <string name="progress_led_off">Led has been turned off</string>
+    <string name="progress_led_blinked">Led has been blinked</string>
 </resources>

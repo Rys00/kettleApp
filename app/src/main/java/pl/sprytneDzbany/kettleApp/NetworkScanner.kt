@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.LinkAddress
 import android.util.Log
+import android.widget.TextView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -16,65 +17,126 @@ import java.util.concurrent.Callable
 import kotlin.math.pow
 
 
-class NetworkScanner(private val context: Activity) {
+class NetworkScanner(
+    private val context: Activity,
+    private val tvProggress: TextView? = null,
+) {
 
     private val TAG = "NetworkScanner"
-    data class LocalDeviceInfo(val host: String, val strMacAddress: String?)
-    fun findActiveKettles(port: Int = 2137): Boolean {
-        try {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val currentNetwork = connectivityManager.activeNetwork
-            val linkProperties = connectivityManager.getLinkProperties(currentNetwork) ?: return false
-            val linkAddress = getIPv4Address(linkProperties.linkAddresses) ?: return false
-            val address = linkAddress.address.hostAddress
-            val netmask = linkAddress.prefixLength
-            if(netmask < 22) {return false}
-            Log.i(TAG, "My address: $address")
-            Log.i(TAG, "My netmask: $netmask")
-            Log.i(TAG, "Scanning network addresses...")
-            val binaryNetworkPart = getBinaryNetworkPart(address, netmask)
-            val hostAmount = (2.toDouble().pow((32 - netmask))-2).toInt()
-            for (hostId in 1..hostAmount) {
-                val ipAddress = getHostAddress(binaryNetworkPart, netmask, hostId)
-                //Log.i(TAG, ipAddress)
-                openConnection(ipAddress, port).subscribe fromCallable@{ result ->
-                    if(!result.isPresent) {
-                        //Log.i(TAG, "Unsuccessful connection to $ipAddress")
-                        return@fromCallable
+    private val scanCompleteLock = Object()
+    private val scanResulLock = Object()
+
+    fun findActiveKettles(port: Int = 2137): Observable<Optional<ArrayList<WebClient>>> {
+        return Observable.fromCallable fromCallable@{
+            try {
+                displayProgressMessage(R.string.progress_fetching_network_config)
+                val linkAddress = getIPv4LinkAddress()?: return@fromCallable Optional.empty()
+                var result = Optional.empty<ArrayList<WebClient>>()
+                scanHosts(linkAddress, port).subscribe fromScanHost@{ r ->
+                    if(!r.isPresent || r.get().isEmpty()) {return@fromScanHost}
+                    val allMatches = r.get()
+                    val verifiedMatches = ArrayList<WebClient>()
+                    var count = 0
+                    displayProgressMessage(R.string.progress_verifying_devices)
+                    allMatches.forEach { webClient ->
+                        webClient.verify {
+                            count += 1
+                            if(webClient.verified) {
+                                verifiedMatches.add(webClient)
+                            } else {
+                                webClient.close()
+                            }
+                            if (count == allMatches.size) {
+                                synchronized(scanResulLock) {
+                                    result = Optional.of(verifiedMatches)
+                                    scanResulLock.notifyAll()
+                                }
+                            }
+                        }
                     }
-                    Log.i(TAG, "Found opened port $port at address: $ipAddress")
+                }
+                synchronized(scanResulLock) {
+                    scanResulLock.wait(10000)
+                }
+                return@fromCallable result
+            } catch (e: Exception) {
+                Log.e(TAG, e.printStackTrace().toString())
+                return@fromCallable Optional.empty()
+            }
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun scanHosts(onLinkAddress: LinkAddress, lookForOpenPort: Int):
+            Observable<Optional<ArrayList<WebClient>>> {
+        return Observable.fromCallable fromCallable@{
+            val address = onLinkAddress.address.hostAddress
+            val netmask = onLinkAddress.prefixLength
+            if (netmask < 22) {return@fromCallable Optional.empty()}
+
+            displayProgressMessage(R.string.progress_scanning_network)
+            Log.i(TAG, "Scanning network addresses...")
+
+            val binaryNetworkPart = getBinaryNetworkPart(address, netmask)
+            val hostAmount = (2.toDouble().pow((32 - netmask)) - 2).toInt()
+
+            var scanned = 0
+            val matches = ArrayList<WebClient>()
+            for (hostId in 1..hostAmount) {
+                val ipAddress = getHostAddress(binaryNetworkPart, hostId)
+                openConnection(ipAddress, lookForOpenPort).subscribe fromOpenConnection@{ result ->
+                    if (!result.isPresent) {
+                        //Log.i(TAG, "Unsuccessful connection to $ipAddress")
+                        scanned += 1
+                        synchronized(scanCompleteLock) {
+                            if(scanned == hostAmount) {scanCompleteLock.notifyAll()}
+                        }
+                        return@fromOpenConnection
+                    }
+                    Log.i(TAG, "Found opened port $lookForOpenPort at address: $ipAddress")
                     val socket = result.get()
                     socket.close()
                     val socketAddress = socket.remoteSocketAddress as InetSocketAddress
                     val hostAddress = socketAddress.address.hostAddress
-                    val uri = URI("ws://$hostAddress:$port/")
-                    val webClient = WebClient(uri, context) {webClient ->
-                        webClient.verify(fun() {
-                            if (webClient.verified) {
-                                Log.i(TAG, "Kettle verified")
-                                webClient.sendCommand("ledOn").subscribe { response ->
-                                    val message = response.get("message")
-                                    Log.i(TAG, "$message")
-                                    Thread.sleep(1000)
-                                    webClient.sendCommand("ledOff").subscribe { r ->
-                                        val m = r.get("message")
-                                        Log.i(TAG, "$m")
-                                    }
-                                }
-                            }
-                        })
+                    val uri = URI("ws://$hostAddress:$lookForOpenPort/")
+                    val webClient = WebClient(uri, context) {
+                        scanned += 1
+                        synchronized(scanCompleteLock) {
+                            if(scanned == hostAmount) {scanCompleteLock.notifyAll()}
+                        }
                     }
                     webClient.connect()
+                    matches.add(webClient)
                 }
             }
-        } catch (e: Exception) {
-            throw e
-            return false
+            synchronized(scanCompleteLock) {
+                scanCompleteLock.wait(10000)
+            }
+            Log.i(TAG, "Scanning complete!")
+            return@fromCallable Optional.of(matches)
         }
-        return true
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun getIPv4Address(linkAddresses: List<LinkAddress>): LinkAddress? {
+    private fun getIPv4LinkAddress(): LinkAddress? {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val currentNetwork = connectivityManager.activeNetwork
+        val linkProperties =
+            connectivityManager.getLinkProperties(currentNetwork)?: return null
+        val linkAddress = selectIPv4LinkAddress(linkProperties.linkAddresses) ?: return null
+
+        val address = linkAddress.address.hostAddress
+        val netmask = linkAddress.prefixLength
+
+        Log.i(TAG, "My address: $address")
+        Log.i(TAG, "My netmask: $netmask")
+        return linkAddress
+    }
+
+    private fun selectIPv4LinkAddress(linkAddresses: List<LinkAddress>): LinkAddress? {
         linkAddresses.forEach { address ->
             if(address.address.address.size == 4) {
                 return address
@@ -96,7 +158,8 @@ class NetworkScanner(private val context: Activity) {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
-    private fun getHostAddress(binaryNetworkPart: String, netmask: Int, i: Int): String {
+    private fun getHostAddress(binaryNetworkPart: String, i: Int): String {
+        val netmask = binaryNetworkPart.length
         val binaryHostPart = Integer.toBinaryString(i).padStart(32-netmask, '0')
         val binaryAddress = binaryNetworkPart+binaryHostPart
         return String.format("%d.%d.%d.%d",
@@ -113,5 +176,15 @@ class NetworkScanner(private val context: Activity) {
             binaryAddress += Integer.toBinaryString(byte.toInt()).padStart(8, '0')
         }
         return binaryAddress.substring(0, netmask)
+    }
+
+    private fun displayProgressMessage(messageStringPointer: Int) {
+        if(tvProggress != null) {
+            context.runOnUiThread {
+                val message = context.getString(messageStringPointer)
+                Log.i(TAG, "Displaying progress message - $message")
+                tvProggress.text = message
+            }
+        }
     }
 }

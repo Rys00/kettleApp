@@ -1,7 +1,6 @@
 package pl.sprytneDzbany.kettleApp
 
 import android.app.Activity
-import android.content.Context
 import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -9,7 +8,6 @@ import io.reactivex.schedulers.Schedulers
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
-import pl.sprytneDzbany.kettleApp.PermissionManger.getString
 import java.net.URI
 import java.util.concurrent.Callable
 
@@ -21,33 +19,34 @@ class WebClient(
 ) : WebSocketClient(serverURI) {
 
     private val TAG = "WebClient"
-    private val timeout: Long = 5000
+    private val awaitTimeout: Long = 5000
     var verified = false
-    val responseToken = Object()
-    val mainThreadToken = Object()
+    private val responseLock = Object()
+    private val mainThreadLock = Object()
     private var lastResponse = JSONObject()
     override fun onOpen(serverHandshake: ServerHandshake?) {
         Log.i(TAG, "Opened connection to $uri")
         onConnectCallback(this)
     }
 
-    fun verify(callback: () -> Any) {
+    fun verify(callback: () -> Unit) {
         Log.i(TAG, "Testing if responding device is our kettle...")
         Log.i(TAG, "Sending question to verify...")
         val data = JSONObject()
         var question = ""
-        synchronized(mainThreadToken) {
+        synchronized(mainThreadLock) {
             context.runOnUiThread {
                 question = context.getString(R.string.verify_question)
-                synchronized(mainThreadToken) {
-                    mainThreadToken.notifyAll()
+                synchronized(mainThreadLock) {
+                    mainThreadLock.notifyAll()
                 }
             }
-            mainThreadToken.wait()
+            if(question == "") {
+                mainThreadLock.wait()
+            }
         }
         data.put("question", question)
-        val answer = sendCommand("verify", data)
-        answer.subscribe {response ->
+        sendCommand("verify", data).subscribe {response ->
             val code = response.get("code").toString()
             val message = response.get("message")
             if(code != "200") {
@@ -55,11 +54,11 @@ class WebClient(
                 return@subscribe
             }
             if(message == context.getString(R.string.verify_answer)) {
-                Log.i(TAG, "Verify successful '$uri' is kettle!")
+                Log.i(TAG, "Verification successful - '$uri' is our kettle!")
                 verified = true
                 callback()
             } else {
-                Log.i(TAG, "Verify unsuccessful '$uri' isn't kettle!")
+                Log.i(TAG, "Verification failed '$uri' isn't our kettle!")
                 verified = false
                 callback()
             }
@@ -73,9 +72,9 @@ class WebClient(
         // waiting for response
         return Observable.fromCallable(Callable fromCallable@{
             lastResponse = JSONObject("{'code': 408, 'message': 'timeout'}")
-            synchronized(responseToken) {
+            synchronized(responseLock) {
                 try {
-                    responseToken.wait(timeout)
+                    responseLock.wait(awaitTimeout)
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }
@@ -97,8 +96,8 @@ class WebClient(
             Log.i(TAG, "Error while parsing message from server")
         }
         lastResponse = data
-        synchronized(responseToken) {
-            responseToken.notifyAll()
+        synchronized(responseLock) {
+            responseLock.notifyAll()
         }
     }
 
