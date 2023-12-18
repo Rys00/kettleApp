@@ -13,6 +13,8 @@ class KettleActivity: ComponentActivity() {
     private val TAG = "KettleActivity"
     private lateinit var binding: ActivityKettleBinding
 
+    private var busy = false
+
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var kettle: WebClient
@@ -28,15 +30,26 @@ class KettleActivity: ComponentActivity() {
         binding = ActivityKettleBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        binding.bBlink
-            .setOnClickListener {
-               sendCommand("ledOn") {
-                   Thread.sleep(500)
-                   sendCommand("ledOff") {
-                       displayProgressMessage(R.string.progress_led_blinked)
-                   }
-               }
+        binding.bBlink.setOnClickListener {
+            sendCommand("ledOn") {
+                Thread.sleep(1000)
+                sendCommand("ledOff") {
+                    displayProgressMessage(R.string.progress_led_blinked)
+                }
             }
+        }
+
+        binding.bKettleOn.setOnClickListener {
+            sendCommand("kettleOn") {
+                displayProgressMessage(R.string.progress_kettle_on)
+            }
+        }
+
+        binding.bKettleOff.setOnClickListener {
+            sendCommand("kettleOff") {
+                displayProgressMessage(R.string.progress_kettle_off)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -47,13 +60,23 @@ class KettleActivity: ComponentActivity() {
     private fun sendCommand(
         command: String,
         extraData: JSONObject = JSONObject(),
-        onSuccessfulResponseCallback: (response: JSONObject) -> Any) {
-        kettle.sendCommand(command, extraData).subscribe fromResponse@{ response ->
-            if(response.get("code") != 200) {
-                displayProgressMessage(R.string.progress_error)
-                return@fromResponse
+        onSuccessfulResponseCallback: (response: JSONObject) -> Any
+    ) {
+        if(busy) return
+        busy = true
+        try {
+            kettle.sendCommand(command, extraData).subscribe fromResponse@{ response ->
+                busy = false
+                if(response.get("code") != 200) {
+                    displayProgressMessage(R.string.progress_error)
+                    return@fromResponse
+                }
+                onSuccessfulResponseCallback(response)
             }
-            onSuccessfulResponseCallback(response)
+        }
+        catch (e: Exception) {
+            busy = false
+            displayProgressMessage(R.string.connection_error)
         }
     }
 

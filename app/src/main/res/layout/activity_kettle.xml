@@ -36,28 +36,58 @@
         android:id="@+id/tv_kettle_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="48dp"
         android:fontFamily="@font/lilita_one"
         android:rotation="0"
         android:text="@string/kettle_name"
         android:textColor="@color/text"
         android:textSize="48sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/b_blink"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/button"
-        android:fontFamily="@font/sono_bold"
-        android:text="@string/blink_led_text"
-        android:textAllCaps="false"
-        android:textColor="@color/text"
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:divider="@drawable/divider"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:showDividers="middle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/b_blink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button"
+            android:fontFamily="@font/sono_bold"
+            android:text="@string/button_blink_led"
+            android:textAllCaps="false"
+            android:textColor="@color/text" />
+
+        <Button
+            android:id="@+id/b_kettle_on"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button"
+            android:fontFamily="@font/sono_bold"
+            android:text="@string/button_kettle_on"
+            android:textAllCaps="false"
+            android:textColor="@color/text" />
+
+        <Button
+            android:id="@+id/b_kettle_off"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button"
+            android:fontFamily="@font/sono_bold"
+            android:text="@string/button_kettle_off"
+            android:textAllCaps="false"
+            android:textColor="@color/text" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
