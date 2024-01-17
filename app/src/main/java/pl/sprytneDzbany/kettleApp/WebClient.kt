@@ -9,24 +9,33 @@ import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
 import java.net.URI
+import java.nio.channels.NotYetConnectedException
 import java.util.concurrent.Callable
+import java.util.UUID
 
 
 class WebClient(
     serverURI: URI,
     private val context: Activity,
-    private val onConnectCallback: (webClient: WebClient) -> Any
+    private var onConnectCallback: ((webClient: WebClient) -> Any)? = null
 ) : WebSocketClient(serverURI) {
 
     private val TAG = "WebClient"
-    private val awaitTimeout: Long = 5000
+    private val awaitTimeout: Long = 2000
     var verified = false
+    private var currentMessageId: UUID? = null
     private val responseLock = Object()
+    private val busyLock = Object()
+    private val connectingLock = Object()
     private val mainThreadLock = Object()
     private var lastResponse = JSONObject()
     override fun onOpen(serverHandshake: ServerHandshake?) {
         Log.i(TAG, "Opened connection to $uri")
-        onConnectCallback(this)
+        onConnectCallback?.let { it(this) }
+        onConnectCallback = null
+        synchronized(connectingLock) {
+            connectingLock.notifyAll()
+        }
     }
 
     fun verify(callback: () -> Unit) {
@@ -50,7 +59,7 @@ class WebClient(
             val code = response.get("code").toString()
             val message = response.get("message")
             if(code != "200") {
-                Log.i(TAG, "Server response: Error code $code '$message'")
+                Log.w(TAG, "Verification failed: Server error code $code '$message'")
                 return@subscribe
             }
             if(message == context.getString(R.string.verify_answer)) {
@@ -58,20 +67,45 @@ class WebClient(
                 verified = true
                 callback()
             } else {
-                Log.i(TAG, "Verification failed '$uri' isn't our kettle!")
+                Log.w(TAG, "Verification failed '$uri' isn't our kettle!")
                 verified = false
                 callback()
             }
         }
     }
 
+    private fun getTimeoutResponse(): JSONObject {
+        return JSONObject("{'code': 408, 'message': 'timeout', 'uuid': '$currentMessageId'}")
+    }
+
     fun sendCommand(command: String, extraData: JSONObject = JSONObject()): Observable<JSONObject> {
+        if(currentMessageId != null) {
+            synchronized(busyLock) {
+                // waits until previous message received its response
+                busyLock.wait()
+            }
+        }
+
+        // generates message uuid
+        currentMessageId = UUID.randomUUID()
+        extraData.put("uuid", currentMessageId?.toString())
         extraData.put("command", command)
+
+        try {
+            send(extraData.toString())
+        } catch (e: NotYetConnectedException) {
+            Log.w(TAG, "Connection with server was closed, trying to open once again...")
+            connect()
+            synchronized(connectingLock) {
+                connectingLock.wait()
+            }
+            Log.w(TAG, "Connection with server reestablished!")
+        }
         send(extraData.toString())
 
-        // waiting for response
+        // waiting for response or timeout
         return Observable.fromCallable(Callable fromCallable@{
-            lastResponse = JSONObject("{'code': 408, 'message': 'timeout'}")
+            lastResponse = getTimeoutResponse()
             synchronized(responseLock) {
                 try {
                     responseLock.wait(awaitTimeout)
@@ -79,9 +113,12 @@ class WebClient(
                     e.printStackTrace()
                 }
             }
-            val response = lastResponse.toString()
-            Log.i(TAG, "Received message - $response")
 
+            // frees busy lock
+            synchronized(busyLock) {
+                currentMessageId = null
+                busyLock.notifyAll()
+            }
             return@fromCallable lastResponse
         })
             .subscribeOn(Schedulers.io())
@@ -89,16 +126,31 @@ class WebClient(
     }
 
     override fun onMessage(s: String) {
-        var data = JSONObject("{'code': '400'}")
+        var data: JSONObject? = null
         try {
             data = JSONObject(s)
         } catch (e: Exception) {
-            Log.i(TAG, "Error while parsing message from server")
+            Log.w(TAG, "Error while parsing message from server!")
+        }
+        try {
+            if(
+                data == null
+                || currentMessageId == null
+                || data.get("uuid") != currentMessageId.toString()
+                )
+            {
+                Log.w(TAG, "Received not awaited message! - $data")
+                return
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Received not identified message! - $data")
+            return
         }
         lastResponse = data
         synchronized(responseLock) {
             responseLock.notifyAll()
         }
+        Log.i(TAG, "Received awaited message - $data")
     }
 
     override fun onClose(i: Int, s: String, b: Boolean) {

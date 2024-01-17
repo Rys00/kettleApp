@@ -1,0 +1,141 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_checked="true">
+        <layer-list>
+            <item>
+                <shape>
+                    <gradient
+                        android:startColor="@color/passive"
+                        android:centerColor="@color/passive"
+                        android:endColor="@color/passive_dark"
+                        android:angle="-90"/>
+
+                    <padding
+                        android:bottom="3dp"
+                        android:left="3dp"
+                        android:top="3dp"
+                        android:right="3dp"/>
+
+                    <stroke
+                        android:width="2dp"
+                        android:color="@color/lime"/>
+
+                    <corners
+                        android:radius="7dp"/>
+                </shape>
+            </item>
+            <item>
+                <vector
+                    android:viewportWidth="100"
+                    android:viewportHeight="100"
+                    android:width="100dp"
+                    android:height="100dp">
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/lime"
+                        android:strokeWidth="14"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/lime"
+                        android:strokeWidth="10"
+                        android:strokeLineCap="round"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="8"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="6"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="4"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="2"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                </vector>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <layer-list>
+            <item>
+                <shape>
+                    <gradient
+                        android:startColor="@color/passive"
+                        android:centerColor="@color/passive"
+                        android:endColor="@color/passive_dark"
+                        android:angle="-90"/>
+
+                    <padding
+                        android:bottom="3dp"
+                        android:left="3dp"
+                        android:top="3dp"
+                        android:right="3dp"/>
+
+                    <stroke
+                        android:width="2dp"
+                        android:color="@color/red"/>
+
+                    <corners
+                        android:radius="7dp"/>
+                </shape>
+            </item>
+            <item>
+                <vector
+                    android:viewportWidth="100"
+                    android:viewportHeight="100"
+                    android:width="100dp"
+                    android:height="100dp">
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/red"
+                        android:strokeWidth="14"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/red"
+                        android:strokeWidth="10"
+                        android:strokeLineCap="round"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="8"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="6"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="4"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                    <path
+                        android:pathData="M 25 25 C -15 102 115 102 75 25 M 50 15 L 50 50"
+                        android:strokeColor="@color/white"
+                        android:strokeWidth="2"
+                        android:strokeLineCap="round"
+                        android:strokeAlpha="0.25"/>
+                </vector>
+            </item>
+        </layer-list>
+    </item>
+</selector>

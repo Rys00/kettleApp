@@ -23,7 +23,7 @@
         android:id="@+id/tv_manager_proggress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="50dp"
         android:fontFamily="@font/sono_bold"
         android:textAlignment="center"
         android:textColor="@color/text"
@@ -36,7 +36,7 @@
         android:id="@+id/tv_kettle_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="40dp"
         android:fontFamily="@font/lilita_one"
         android:rotation="0"
         android:text="@string/kettle_name"
@@ -47,47 +47,106 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="200dp"
-        android:layout_height="300dp"
-        android:divider="@drawable/divider"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:showDividers="middle"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <ToggleButton
+        android:id="@+id/b_power_kettle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/power_button"
+        android:checked="false"
+        android:textColor="#00FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/tv_manager_proggress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/kettle_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:contentDescription="@string/kettle_icon_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/tv_kettle_name"
+        app:srcCompat="@drawable/kettle" />
 
-        <Button
-            android:id="@+id/b_blink"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button"
-            android:fontFamily="@font/sono_bold"
-            android:text="@string/button_blink_led"
-            android:textAllCaps="false"
-            android:textColor="@color/text" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="-65dp"
+        android:layout_marginBottom="50dp"
+        android:rotation="90"
+        app:layout_constraintBottom_toTopOf="@+id/b_power_kettle"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/b_kettle_on"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button"
-            android:fontFamily="@font/sono_bold"
-            android:text="@string/button_kettle_on"
-            android:textAllCaps="false"
-            android:textColor="@color/text" />
+        <ProgressBar
+            android:id="@+id/temperature_bar_background"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerHorizontal="true"
+            android:max="150"
+            android:padding="3dp"
+            android:progress="100"
+            android:progressDrawable="@drawable/temperature_circle"
+            android:rotation="-30"
+            android:scaleX="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/b_kettle_off"
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/temperature_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerHorizontal="true"
+            android:max="150"
+            android:padding="3dp"
+            android:progress="60"
+            android:progressDrawable="@drawable/temperature_circle_progress"
+            android:rotation="-30"
+            android:scaleX="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/temperature_bar_glow"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerHorizontal="true"
+            android:max="150"
+            android:padding="3dp"
+            android:progress="60"
+            android:progressDrawable="@drawable/temperature_circle_glow"
+            android:rotation="-30"
+            android:scaleX="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/temperature_bar_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/button"
-            android:fontFamily="@font/sono_bold"
-            android:text="@string/button_kettle_off"
-            android:textAllCaps="false"
-            android:textColor="@color/text" />
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:fontFamily="@font/sono_semi_bold"
+            android:gravity="center"
+            android:rotation="-90"
+            android:text="100"
+            android:textColor="@color/text"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="@+id/temperature_bar"
+            app:layout_constraintEnd_toEndOf="@+id/temperature_bar"
+            app:layout_constraintStart_toStartOf="@+id/temperature_bar"
+            app:layout_constraintTop_toTopOf="@+id/temperature_bar"
+            app:layout_constraintVertical_bias="0.6" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

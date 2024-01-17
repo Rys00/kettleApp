@@ -7,7 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="background">#363062</color>
+    <color name="background">#1c1933</color>
+    <color name="background_light">#363062</color>
     <color name="passive_dark">#334166</color>
     <color name="passive">#435585</color>
     <color name="passive_light">#556caa</color>
@@ -17,4 +18,6 @@
     <color name="text_dark">#edd69b</color>
     <color name="text">#F5E8C7</color>
     <color name="text_light">#fdfaf2</color>
+    <color name="lime">#41f072</color>
+    <color name="red">#ed3257</color>
 </resources>

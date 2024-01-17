@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">kettleApp</string>
     <string name="app_title">Kettle App</string>
-    <string name="kettle_name">Kettle Manager</string>
+    <string name="kettle_name">My kettle</string>
     <string name="find_kettles_text">Find my kettle!</string>
     <string name="button_blink_led">Blink LED</string>
     <string name="button_kettle_on">Turn on the kettle</string>
@@ -21,4 +21,6 @@
     <string name="progress_led_blinked">Led has been blinked</string>
     <string name="progress_kettle_on">The kettle has been turned on</string>
     <string name="progress_kettle_off">The kettle has been turned off</string>
+    <string name="kettle_icon_description">kettle icon</string>
+    <string name="temperature_bar_text">%1$s°</string>
 </resources>

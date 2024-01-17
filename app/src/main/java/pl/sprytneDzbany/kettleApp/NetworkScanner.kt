@@ -57,6 +57,7 @@ class NetworkScanner(
                 }
                 synchronized(scanResulLock) {
                     scanResulLock.wait(10000)
+                    Log.w(TAG, "Here")
                 }
                 return@fromCallable result
             } catch (e: Exception) {
@@ -71,9 +72,11 @@ class NetworkScanner(
     private fun scanHosts(onLinkAddress: LinkAddress, lookForOpenPort: Int):
             Observable<Optional<ArrayList<WebClient>>> {
         return Observable.fromCallable fromCallable@{
+            var scanResult = Optional.empty<ArrayList<WebClient>>()
+
             val address = onLinkAddress.address.hostAddress
             val netmask = onLinkAddress.prefixLength
-            if (netmask < 22) {return@fromCallable Optional.empty()}
+            if (netmask < 22) {return@fromCallable scanResult}
 
             displayProgressMessage(R.string.progress_scanning_network)
             Log.i(TAG, "Scanning network addresses...")
@@ -90,7 +93,10 @@ class NetworkScanner(
                         //Log.i(TAG, "Unsuccessful connection to $ipAddress")
                         scanned += 1
                         synchronized(scanCompleteLock) {
-                            if(scanned == hostAmount) {scanCompleteLock.notifyAll()}
+                            if(scanned == hostAmount) {
+                                scanResult = Optional.of(matches)
+                                scanCompleteLock.notifyAll()
+                            }
                         }
                         return@fromOpenConnection
                     }
@@ -103,18 +109,21 @@ class NetworkScanner(
                     val webClient = WebClient(uri, context) {
                         scanned += 1
                         synchronized(scanCompleteLock) {
-                            if(scanned == hostAmount) {scanCompleteLock.notifyAll()}
+                            if(scanned == hostAmount) {
+                                scanResult = Optional.of(matches)
+                                scanCompleteLock.notifyAll()
+                            }
                         }
                     }
-                    webClient.connect()
                     matches.add(webClient)
+                    webClient.connect()
                 }
             }
             synchronized(scanCompleteLock) {
                 scanCompleteLock.wait(10000)
             }
             Log.i(TAG, "Scanning complete!")
-            return@fromCallable Optional.of(matches)
+            return@fromCallable scanResult
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -145,7 +154,7 @@ class NetworkScanner(
         return null
     }
 
-    private fun openConnection(ipAddress: String, port: Int, timeout: Int = 5000): Observable<Optional<Socket>> {
+    private fun openConnection(ipAddress: String, port: Int, timeout: Int = 1000): Observable<Optional<Socket>> {
         return Observable.fromCallable(Callable fromCallable@{
             val socket = Socket()
             try {

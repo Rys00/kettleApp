@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <layer-list>
+            <item>
+                <shape
+                    android:innerRadiusRatio="2.64"
+                    android:shape="ring"
+                    android:thickness="24dp"
+                    android:useLevel="true">
+                    <solid android:color="@color/passive_dark" />
+                </shape>
+            </item>
+            <item>
+                <shape
+                    android:innerRadiusRatio="2.5"
+                    android:shape="ring"
+                    android:thickness="16dp"
+                    android:useLevel="true">
+                    <solid android:color="@color/passive_light" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>
