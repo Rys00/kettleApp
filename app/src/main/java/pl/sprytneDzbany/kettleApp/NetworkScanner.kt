@@ -31,11 +31,16 @@ class NetworkScanner(
             try {
                 displayProgressMessage(R.string.progress_fetching_network_config)
                 val linkAddress = getIPv4LinkAddress()?: return@fromCallable Optional.empty()
-                var result = Optional.empty<ArrayList<WebClient>>()
+                val result: Optional<ArrayList<WebClient>>
+                val verifiedMatches = ArrayList<WebClient>()
                 scanHosts(linkAddress, port).subscribe fromScanHost@{ r ->
-                    if(!r.isPresent || r.get().isEmpty()) {return@fromScanHost}
+                    if(!r.isPresent || r.get().isEmpty()) {
+                        synchronized(scanResulLock) {
+                            scanResulLock.notifyAll()
+                        }
+                        return@fromScanHost
+                    }
                     val allMatches = r.get()
-                    val verifiedMatches = ArrayList<WebClient>()
                     var count = 0
                     displayProgressMessage(R.string.progress_verifying_devices)
                     allMatches.forEach { webClient ->
@@ -48,7 +53,6 @@ class NetworkScanner(
                             }
                             if (count == allMatches.size) {
                                 synchronized(scanResulLock) {
-                                    result = Optional.of(verifiedMatches)
                                     scanResulLock.notifyAll()
                                 }
                             }
@@ -57,8 +61,8 @@ class NetworkScanner(
                 }
                 synchronized(scanResulLock) {
                     scanResulLock.wait(10000)
-                    Log.w(TAG, "Here")
                 }
+                result = Optional.of(verifiedMatches)
                 return@fromCallable result
             } catch (e: Exception) {
                 Log.e(TAG, e.printStackTrace().toString())
@@ -94,7 +98,6 @@ class NetworkScanner(
                         scanned += 1
                         synchronized(scanCompleteLock) {
                             if(scanned == hostAmount) {
-                                scanResult = Optional.of(matches)
                                 scanCompleteLock.notifyAll()
                             }
                         }
@@ -110,7 +113,6 @@ class NetworkScanner(
                         scanned += 1
                         synchronized(scanCompleteLock) {
                             if(scanned == hostAmount) {
-                                scanResult = Optional.of(matches)
                                 scanCompleteLock.notifyAll()
                             }
                         }
@@ -120,8 +122,9 @@ class NetworkScanner(
                 }
             }
             synchronized(scanCompleteLock) {
-                scanCompleteLock.wait(10000)
+                scanCompleteLock.wait(5000)
             }
+            scanResult = Optional.of(matches)
             Log.i(TAG, "Scanning complete!")
             return@fromCallable scanResult
         }

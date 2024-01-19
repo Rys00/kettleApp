@@ -6,6 +6,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.java_websocket.client.WebSocketClient
+import org.java_websocket.exceptions.WebsocketNotConnectedException
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
 import java.net.URI
@@ -21,7 +22,7 @@ class WebClient(
 ) : WebSocketClient(serverURI) {
 
     private val TAG = "WebClient"
-    private val awaitTimeout: Long = 2000
+    private val awaitTimeout: Long = 5000
     var verified = false
     private var currentMessageId: UUID? = null
     private val responseLock = Object()
@@ -29,6 +30,7 @@ class WebClient(
     private val connectingLock = Object()
     private val mainThreadLock = Object()
     private var lastResponse = JSONObject()
+    private var onUnidentifiedMessageCallback: ((JSONObject) -> Any)? = null
     override fun onOpen(serverHandshake: ServerHandshake?) {
         Log.i(TAG, "Opened connection to $uri")
         onConnectCallback?.let { it(this) }
@@ -93,7 +95,7 @@ class WebClient(
 
         try {
             send(extraData.toString())
-        } catch (e: NotYetConnectedException) {
+        } catch (e: WebsocketNotConnectedException) {
             Log.w(TAG, "Connection with server was closed, trying to open once again...")
             connect()
             synchronized(connectingLock) {
@@ -125,6 +127,10 @@ class WebClient(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
+    fun setOnUnidentifiedMessageCallback(callback: (JSONObject) -> Any) {
+        onUnidentifiedMessageCallback = callback
+    }
+
     override fun onMessage(s: String) {
         var data: JSONObject? = null
         try {
@@ -135,15 +141,18 @@ class WebClient(
         try {
             if(
                 data == null
-                || currentMessageId == null
                 || data.get("uuid") != currentMessageId.toString()
+                || currentMessageId == null
                 )
             {
                 Log.w(TAG, "Received not awaited message! - $data")
                 return
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Received not identified message! - $data")
+            Log.i(TAG, "Received not identified message! - $data")
+            if(onUnidentifiedMessageCallback != null && data != null) {
+                onUnidentifiedMessageCallback?.let { it(data) }
+            }
             return
         }
         lastResponse = data

@@ -5,9 +5,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import pl.sprytneDzbany.kettleApp.databinding.ActivityMainBinding
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var loadCircle: AnimatedVectorHelper
     private val TAG = "MainActivity"

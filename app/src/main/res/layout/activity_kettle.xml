@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/smoke"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:layout_marginBottom="-120dp"
+        android:src="@drawable/smoke"
+        app:layout_constraintBottom_toTopOf="@+id/kettle_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <TextView
         android:id="@+id/tv_manager_help"
         android:layout_width="wrap_content"
@@ -60,6 +70,16 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
+        android:id="@+id/iv_water"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_kettle_name"
+        app:srcCompat="@drawable/water" />
+
+    <ImageView
         android:id="@+id/kettle_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -68,7 +88,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_kettle_name"
-        app:srcCompat="@drawable/kettle" />
+        app:srcCompat="@drawable/kettle"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
