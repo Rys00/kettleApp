@@ -85,7 +85,7 @@ class NetworkScanner(
             displayProgressMessage(R.string.progress_scanning_network)
             Log.i(TAG, "Scanning network addresses...")
 
-            val binaryNetworkPart = getBinaryNetworkPart(address, netmask)
+            val binaryNetworkPart = getBinaryNetworkPart(address!!, netmask)
             val hostAmount = (2.toDouble().pow((32 - netmask)) - 2).toInt()
 
             var scanned = 0

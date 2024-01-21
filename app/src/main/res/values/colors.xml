@@ -7,9 +7,19 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="background">#000</color>
-    <color name="background_old">#1c1933</color>
-    <color name="background_light">#363062</color>
+    <color name="lime">#41f072</color>
+    <color name="red">#ed3257</color>
+<!--    <color name="background">#000000</color>-->
+<!--    <color name="passive_dark">#22252a</color>-->
+<!--    <color name="passive">#393E46</color>-->
+<!--    <color name="passive_light">#393e46</color>-->
+<!--    <color name="active_dark">#ffc338</color>-->
+<!--    <color name="active">#FFD369</color>-->
+<!--    <color name="active_light">#ffe29e</color>-->
+<!--    <color name="text_dark">#d4d4d4</color>-->
+<!--    <color name="text">#EEEEEE</color>-->
+<!--    <color name="text_light">#FFFFFF</color>-->
+    <color name="background">#363062</color>
     <color name="passive_dark">#334166</color>
     <color name="passive">#435585</color>
     <color name="passive_light">#556caa</color>
@@ -19,6 +29,4 @@
     <color name="text_dark">#edd69b</color>
     <color name="text">#F5E8C7</color>
     <color name="text_light">#fdfaf2</color>
-    <color name="lime">#41f072</color>
-    <color name="red">#ed3257</color>
 </resources>

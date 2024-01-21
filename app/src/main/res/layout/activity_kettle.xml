@@ -11,7 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="300dp"
         android:layout_marginBottom="-120dp"
-        android:src="@drawable/smoke"
+        android:src="@drawable/smoke2"
         app:layout_constraintBottom_toTopOf="@+id/kettle_icon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -63,7 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="50dp"
         android:background="@drawable/power_button"
-        android:checked="false"
+        android:checked="true"
         android:textColor="#00FFFFFF"
         app:layout_constraintBottom_toTopOf="@+id/tv_manager_proggress"
         app:layout_constraintEnd_toEndOf="parent"
@@ -124,7 +124,7 @@
             android:layout_centerHorizontal="true"
             android:max="150"
             android:padding="3dp"
-            android:progress="60"
+            android:progress="100"
             android:progressDrawable="@drawable/temperature_circle_progress"
             android:rotation="-30"
             android:scaleX="1"
@@ -141,7 +141,7 @@
             android:layout_centerHorizontal="true"
             android:max="150"
             android:padding="3dp"
-            android:progress="60"
+            android:progress="100"
             android:progressDrawable="@drawable/temperature_circle_glow"
             android:rotation="-30"
             android:scaleX="1"
@@ -158,14 +158,14 @@
             android:fontFamily="@font/sono_semi_bold"
             android:gravity="center"
             android:rotation="-90"
-            android:text="100"
             android:textColor="@color/text"
             android:textSize="30sp"
             app:layout_constraintBottom_toBottomOf="@+id/temperature_bar"
             app:layout_constraintEnd_toEndOf="@+id/temperature_bar"
             app:layout_constraintStart_toStartOf="@+id/temperature_bar"
             app:layout_constraintTop_toTopOf="@+id/temperature_bar"
-            app:layout_constraintVertical_bias="0.6" />
+            app:layout_constraintVertical_bias="0.6"
+            tools:text="100°" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -84,6 +84,7 @@ class KettleActivity: AppCompatActivity() {
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
     private fun onUnidentifiedMessage(data: JSONObject) {

@@ -8,7 +8,7 @@
                     android:shape="ring"
                     android:thickness="16dp"
                     android:useLevel="true">
-                    <solid android:color="@color/lime" />
+                    <solid android:color="@color/red" />
                 </shape>
             </item>
         </layer-list>
